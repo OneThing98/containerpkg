@@ -1,18 +1,16 @@
 package container
 
 type Container struct {
-	ID           string       `json:"id,omitempty"`                   // unique identifier for the container
-	NSPid        int          `json:"namespace_pid,omitempty"`        // process id in the container's namespace
-	Command      *Command     `json:"command,omitempty"`              //command to run inside the container
-	RootFs       string       `json:"rootfs,omitempty"`               //path to the root file system
-	ReadonlyFs   bool         `json:"readonly_fs,omitempty"`          //whether the the file system is read only
-	NetNsFd      uintptr      `json:"network_namespace_fd,omitempty"` //file descriptor for network namespace
-	User         string       `json:"user,omitempty"`                 //user to run as inside the container
-	WorkingDir   string       `json:"working_dir,omitempty"`          //working directory inside the container
-	Namespaces   Namespaces   `json:"namespaces,omitempty"`           //namespace to apply to the container
-	Capabilities Capabilities `json:"capabilities,omitempty"`         //capabilities to apply to the container
-	CgroupsPath  string       `json:"cgroups_path,omitempty"`         //Path to cgroups settings
-	Network      *Network     `json:"network,omitempty"`              //Network settings for container
+	ID           string       `json:"id,omitempty"`
+	NsPid        int          `json:"namespace_pid,omitempty"`
+	Command      *Command     `json:"command,omitempty"`
+	RootFs       string       `json:"rootfs,omitempty"`
+	ReadonlyFs   bool         `json:"readonly_fs,omitempty"`
+	NetNsFd      uintptr      `json:"network_namespace_fd,omitempty"`
+	User         string       `json:"user,omitempty"`
+	WorkingDir   string       `json:"working_dir,omitempty"`
+	Namespaces   Namespaces   `json:"namespaces,omitempty"`
+	Capabilities Capabilities `json:"capabilities,omitempty"`
 }
 
 type Command struct {
@@ -21,25 +19,17 @@ type Command struct {
 }
 
 type Network struct {
-	TempVethName string `json:"temp_veth,omitempty"` //temporary veth pair name
-	IP           string `json:"ip,omitempty"`        //IP address to assign the container
-	Gateway      string `json:"gateway,omitempty"`   //Network gateway for the container
-	Bridge       string `json:"bridge,omitempty"`    //Network bridge name
-	Mtu          int    `json:"mtu,omitempty"`       //MTU size for the network interface
-
+	TempVethName string `json:"temp_veth,omitempty"`
+	IP           string `json:"ip,omitempty"`
+	Gateway      string `json:"gateway,omitempty"`
+	Bridge       string `json:"bridge,omitempty"`
+	Mtu          int    `json:"mtu,omitempty"`
 }
 
 type Namespace string
-
 type Namespaces []Namespace
 
-type Capability string
-
-type Capabilities []Capability
-
-//methods to check if a namespace or capability is contained inside their respective slices.
-
-func (n Namespaces) Container(ns Namespace) bool {
+func (n Namespaces) Contains(ns Namespace) bool {
 	for _, nns := range n {
 		if nns == ns {
 			return true
@@ -48,11 +38,38 @@ func (n Namespaces) Container(ns Namespace) bool {
 	return false
 }
 
-func (c Capabilities) Container(cc Capability) bool {
-	for _, ccs := range c {
-		if ccs == cc {
+type Capability string
+type Capabilities []Capability
+
+func (c Capabilities) Contains(capp Capability) bool {
+	for _, cc := range c {
+		if cc == capp {
 			return true
 		}
 	}
 	return false
 }
+
+const (
+	CAP_SETPCAP        Capability = "SETPCAP"
+	CAP_SYS_MODULE     Capability = "SYS_MODULE"
+	CAP_SYS_RAWIO      Capability = "SYS_RAWIO"
+	CAP_SYS_PACCT      Capability = "SYS_PACCT"
+	CAP_SYS_ADMIN      Capability = "SYS_ADMIN"
+	CAP_SYS_NICE       Capability = "SYS_NICE"
+	CAP_SYS_RESOURCE   Capability = "SYS_RESOURCE"
+	CAP_SYS_TIME       Capability = "SYS_TIME"
+	CAP_SYS_TTY_CONFIG Capability = "SYS_TTY_CONFIG"
+	CAP_MKNOD          Capability = "MKNOD"
+	CAP_AUDIT_WRITE    Capability = "AUDIT_WRITE"
+	CAP_AUDIT_CONTROL  Capability = "AUDIT_CONTROL"
+	CAP_MAC_OVERRIDE   Capability = "MAC_OVERRIDE"
+	CAP_MAC_ADMIN      Capability = "MAC_ADMIN"
+
+	CLONE_NEWNS   Namespace = "NEWNS"   // mount
+	CLONE_NEWUTS  Namespace = "NEWUTS"  // utsname
+	CLONE_NEWIPC  Namespace = "NEWIPC"  // ipc
+	CLONE_NEWUSER Namespace = "NEWUSER" // user
+	CLONE_NEWPID  Namespace = "NEWPID"  // pid
+	CLONE_NEWNET  Namespace = "NEWNET"  // network
+)
